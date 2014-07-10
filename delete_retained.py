@@ -11,25 +11,35 @@ client = None
 topics_to_unpublish = set()
 unpublished_topics = set()
 
-def on_mqtt_message(msg):
-    #~ print "on_mqtt_message", msg
+def on_mqtt_message(arg0, arg1, arg2=None):
+    #
+    #~ print "on_mqtt_message", arg0, arg1, arg2
+    if arg2 is None:
+        mosq, obj, msg = None, arg0, arg1
+    else:
+        mosq, obj, msg = arg0, arg1, arg2
     print msg.topic
     if msg.topic != retain_hack_topic:
         topics_to_unpublish.add(msg.topic)
     else:
         client.on_publish = on_mqtt_publish
         client.unsubscribe(args.topic)
-        for topic in topics_to_unpublish:
-            print topic
-            ret = client.publish(topic, '', retain=True)
+        if topics_to_unpublish:
+            for topic in topics_to_unpublish:
+                print topic
+                ret = client.publish(topic, '', retain=True)
 
-            mid = ret[1]
-            unpublished_topics.add(mid)
-#            print "mid", ret, mid
+                mid = ret[1]
+                unpublished_topics.add(mid)
+        #            print "mid", ret, mid
+        else:
+            print "done!"
+            client.disconnect()
 
 
-def on_mqtt_publish(mid):
-#    print "on publish", mid
+
+def on_mqtt_publish(arg0, arg1, arg2=None):
+    mid = arg1 or arg2
     unpublished_topics.discard(mid)
     if not unpublished_topics:
         print "done!"
