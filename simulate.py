@@ -110,11 +110,11 @@ class ReadOnlyControl(Control):
         self.client.publish(self.topic("meta/readonly"), "1", 2, True)
 
 
-class SwitchControl(WritableControl):
+class SwitchControlBase(Control):
     type = "switch"
 
     def __init__(self, name, is_on=False, **kwargs):
-        super(SwitchControl, self).__init__(name, **kwargs)
+        super(SwitchControlBase, self).__init__(name, **kwargs)
         self.is_on = bool(is_on)
 
     def value_str(self):
@@ -122,6 +122,14 @@ class SwitchControl(WritableControl):
 
     def update(self, payload):
         self.is_on = (payload == "1")
+
+
+class SwitchControl(WritableControl, SwitchControlBase):
+    pass
+
+
+class ReadOnlySwitchControl(ReadOnlyControl, SwitchControlBase):
+    pass
 
 
 class NumericControl(Control):
@@ -152,14 +160,44 @@ class TemperatureControl(ReadOnlyControl, NumericControl):
     type = "temperature"
 
 
+class RGBControl(WritableControl):
+    type = "rgb"
+
+    def __init__(self, name, red=0, green=0, blue=0, **kwargs):
+        super(RGBControl, self).__init__(name, **kwargs)
+        self.red = red
+        self.green = green
+        self.blue = blue
+
+    def value_str(self):
+        return "%d;%d;%d" % (self.red, self.green, self.blue)
+
+    def update(self, payload):
+        parts = payload.split(";")
+        try:
+            if len(parts) != 3:
+                raise ValueError
+            self.red = int(parts[0])
+            self.green = int(parts[1])
+            self.blue = int(parts[2])
+        except ValueError:
+            print "RGBControl: invalid payload: %r" % payload
+
 systems = [
     System("Relays", [
         SwitchControl("Relay 1"),
-        SwitchControl("Relay 2")
+        SwitchControl("Relay 2", target="Relay 2 Status"),
+        ReadOnlySwitchControl("Relay 2 Status")
     ]),
     System("Temperature", [
         TemperatureControl("Temp 1"),
-        RangeControl("Set Temp 1", max=100, target="Temp 1")
+        RangeControl("Set Temp 1", max=100, target="Temp 1"),
+        TemperatureControl("Temp 2"),
+        RangeControl("Set Temp 2", max=100, target="Temp 2")
+    ]),
+    System("Dimmer", [
+        RGBControl("RGB"),
+        RangeControl("White", max=255)
     ])
 ]
 
