@@ -197,6 +197,7 @@ systems = [
     ]),
     System("Dimmer", [
         RGBControl("RGB"),
+        RangeControl("RGB_All", max=100),
         RangeControl("White", max=255)
     ])
 ]
