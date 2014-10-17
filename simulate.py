@@ -160,6 +160,14 @@ class TemperatureControl(ReadOnlyControl, NumericControl):
     type = "temperature"
 
 
+class PressureControl(ReadOnlyControl, NumericControl):
+    type = "pressure"
+
+
+class LuxControl(ReadOnlyControl, NumericControl):
+    type = "lux"
+
+
 class RGBControl(WritableControl):
     type = "rgb"
 
@@ -189,11 +197,15 @@ systems = [
         SwitchControl("Relay 2", target="Relay 2 Status"),
         ReadOnlySwitchControl("Relay 2 Status")
     ]),
-    System("Temperature", [
-        TemperatureControl("Temp 1"),
-        RangeControl("Set Temp 1", max=100, target="Temp 1"),
-        TemperatureControl("Temp 2"),
-        RangeControl("Set Temp 2", max=100, target="Temp 2")
+    System("Weather", [
+        TemperatureControl("Temp 1", value=20),
+        RangeControl("Set Temp 1", value=20, max=100, target="Temp 1"),
+        TemperatureControl("Temp 2", value=20),
+        RangeControl("Set Temp 2", value=20, max=100, target="Temp 2"),
+        PressureControl("Pressure", value=750),
+        RangeControl("Set Pressure", value=750, max=830, target="Pressure"),
+        LuxControl("Illuminance", value=0),
+        RangeControl("Set Illuminance", value=0, max=1000, target="Illuminance")
     ]),
     System("Dimmer", [
         RGBControl("RGB"),
