@@ -168,6 +168,10 @@ class LuxControl(ReadOnlyControl, NumericControl):
     type = "lux"
 
 
+class HumidityControl(ReadOnlyControl, NumericControl):
+    type = "rel_humidity"
+
+
 class RGBControl(WritableControl):
     type = "rgb"
 
@@ -205,7 +209,9 @@ systems = [
         PressureControl("Pressure", value=750),
         RangeControl("Set Pressure", value=750, max=830, target="Pressure"),
         LuxControl("Illuminance", value=0),
-        RangeControl("Set Illuminance", value=0, max=1000, target="Illuminance")
+        RangeControl("Set Illuminance", value=0, max=1000, target="Illuminance"),
+        HumidityControl("Humidity", value=85),
+        RangeControl("Set Humidity", value=85, max=100, target="Humidity"),
     ]),
     System("Dimmer", [
         RGBControl("RGB"),
@@ -242,7 +248,7 @@ def main():
     client.on_message = on_message
     client.connect(args.host, args.port)
 
-    while 1:
+    while True:
         rc = client.loop()
         if rc != 0:
             break
