@@ -41,6 +41,7 @@ class System(object):
 
 class Control(object):
     type = None
+    retain_value = True
 
     def __init__(self, name):
         assert isinstance(name, str)
@@ -63,7 +64,7 @@ class Control(object):
         value_str = self.value_str()
         print "publish: %r = %r" % (self.name, value_str)
         if value_str is not None:
-            self.client.publish(self.topic(), value_str, 0, True)
+            self.client.publish(self.topic(), value_str, 0, self.retain_value)
 
     def post_value(self, payload):
         print "%r <-- %r" % (self.name, payload)
@@ -168,6 +169,28 @@ class LuxControl(ReadOnlyControl, NumericControl):
     type = "lux"
 
 
+class HumidityControl(ReadOnlyControl, NumericControl):
+    type = "rel_humidity"
+
+
+class ButtonControl(WritableControl):
+    type = "pushbutton"
+    retain_value = False
+    # value_str() always returns None for ButtonControl,
+    # so post_value() always posts '1' to MQTT when called
+    # for ButtonControl
+
+    def __init__(self, name, target_value=None, **kwargs):
+        super(ButtonControl, self).__init__(name, **kwargs)
+        self.target_value = target_value
+
+    def post_value(self, payload):
+        print "publish: %r = 1" % self.name
+        self.client.publish(self.topic(), "1", 0, self.retain_value)
+        if self.target is not None:
+            self.system.post_value(self.target, str(self.target_value))
+
+
 class RGBControl(WritableControl):
     type = "rgb"
 
@@ -205,7 +228,10 @@ systems = [
         PressureControl("Pressure", value=750),
         RangeControl("Set Pressure", value=750, max=830, target="Pressure"),
         LuxControl("Illuminance", value=0),
-        RangeControl("Set Illuminance", value=0, max=1000, target="Illuminance")
+        RangeControl("Set Illuminance", value=0, max=1000, target="Illuminance"),
+        HumidityControl("Humidity", value=85),
+        RangeControl("Set Humidity", value=85, max=100, target="Humidity"),
+        ButtonControl("Temp1=25", target="Temp 1", target_value=25)
     ]),
     System("Dimmer", [
         RGBControl("RGB"),
@@ -242,7 +268,7 @@ def main():
     client.on_message = on_message
     client.connect(args.host, args.port)
 
-    while 1:
+    while True:
         rc = client.loop()
         if rc != 0:
             break
