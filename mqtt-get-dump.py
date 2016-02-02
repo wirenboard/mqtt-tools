@@ -1,7 +1,11 @@
 #!/usr/bin/python
 import argparse
 
-import mosquitto
+try:
+    import mosquitto
+except ImportError:
+    import paho.mqtt.client as mosquitto
+
 import time, random
 import sys
 
@@ -32,6 +36,12 @@ if __name__ =='__main__':
     parser.add_argument('-h', '--host', dest='host', type=str,
                      help='MQTT host', default='localhost')
 
+    parser.add_argument('-u', '--username', dest='username', type=str,
+                     help='MQTT username', default='')
+
+    parser.add_argument('-P', '--password', dest='password', type=str,
+                     help='MQTT password', default='')
+
     parser.add_argument('-p', '--port', dest='port', type=int,
                      help='MQTT port', default='1883')
 
@@ -42,6 +52,10 @@ if __name__ =='__main__':
 
 
     client = mosquitto.Mosquitto()
+
+    if args.username:
+        client.username_pw_set(args.username, args.password)
+
     client.connect(args.host, args.port)
     client.on_message = on_mqtt_message
 
