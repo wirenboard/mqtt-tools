@@ -1,7 +1,12 @@
 #!/usr/bin/python
 import argparse
 
-import mosquitto
+try:
+    import mosquitto
+except ImportError:
+    import paho.mqtt.client as mosquitto
+
+
 import time, random
 import sys
 
@@ -25,6 +30,15 @@ if __name__ =='__main__':
     parser.add_argument('-p', '--port', dest='port', type=int,
                      help='MQTT port', default='1883')
 
+
+    parser.add_argument('-u', '--username', dest='username', type=str,
+                     help='MQTT username', default='')
+
+    parser.add_argument('-P', '--password', dest='password', type=str,
+                     help='MQTT password', default='')
+
+
+
     parser.add_argument('filename' ,  type=str,
                      help='File containing MQTT dump.  Topic and message are separated by tab')
 
@@ -32,11 +46,15 @@ if __name__ =='__main__':
 
 
     client = mosquitto.Mosquitto()
+    if args.username:
+        client.username_pw_set(args.username, args.password)
+
     client.connect(args.host, args.port)
     client.on_publish = on_mqtt_publish
 
     mid = None
     for line in open(args.filename):
+        line = line.decode('utf8')
         topic, message = line[:-1].split('\t', 1)
         #~ print topic
         status, mid = client.publish(topic, message, retain=True, qos=2)

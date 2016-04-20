@@ -1,7 +1,11 @@
 #!/usr/bin/python
 import argparse
 
-import mosquitto
+try:
+    import mosquitto
+except ImportError:
+    import paho.mqtt.client as mosquitto
+
 import time, random
 import sys
 
@@ -27,7 +31,7 @@ def on_mqtt_message(arg0, arg1, arg2=None):
         if topics_to_unpublish:
             for topic in topics_to_unpublish:
                 print topic
-                ret = client.publish(topic, '', retain=True)
+                ret = client.publish(topic, '', retain=True, qos=2)
 
                 mid = ret[1]
                 unpublished_topics.add(mid)
@@ -35,6 +39,7 @@ def on_mqtt_message(arg0, arg1, arg2=None):
         else:
             print "done!"
             client.disconnect()
+            sys.exit(0)
 
 
 
@@ -54,13 +59,27 @@ if __name__ =='__main__':
     parser.add_argument('-p', '--port', dest='port', type=int,
                      help='MQTT port', default='1883')
 
+    parser.add_argument('-u', '--username', dest='username', type=str,
+                     help='MQTT username', default='')
+
+    parser.add_argument('-P', '--password', dest='password', type=str,
+                     help='MQTT password', default='')
+
+    mqtt_device_id = str(time.time()) + str(random.randint(0,100000))
+
+    parser.add_argument('--ret-topic', dest='ret_topic', type=str,
+                     help='Topic to write temporary message to', default="/tmp/%s/retain_hack" % ( mqtt_device_id))
+
     parser.add_argument('topic' ,  type=str,
                      help='Topic mask to unpublish retained messages from. For example: "/devices/my-device/#"')
     args = parser.parse_args()
 
-
-    mqtt_device_id = str(time.time()) + str(random.randint(0,100000))
+    retain_hack_topic = args.ret_topic
     client = mosquitto.Mosquitto(mqtt_device_id)
+
+    if args.username:
+        client.username_pw_set(args.username, args.password)
+
     client.connect(args.host, args.port)
     client.on_message = on_mqtt_message
 
@@ -68,7 +87,6 @@ if __name__ =='__main__':
     client.subscribe(args.topic)
 
     # hack to get retained settings first:
-    retain_hack_topic = "/tmp/%s/retain_hack" % ( mqtt_device_id)
     client.subscribe(retain_hack_topic)
     client.publish(retain_hack_topic, '1')
 
