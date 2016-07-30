@@ -18,6 +18,23 @@ to_clean_up = 0
 to_clean_up_mids = []
 
 
+class MQTT_QueueClient(mosquitto.Mosquitto):
+    def __init__(self, *args, **kargs):
+        mosquitto.Mosquitto.__init__(self, *args, **kargs)
+        self.on_publish = MQTT_QueueClient._on_publish_queue
+        self._nmsgs = 0
+
+    def _on_publish_queue(self, userdata, mid):
+        self._nmsgs -= 1
+
+    def publish(self, topic, payload, retain=False, qos=0):
+        self._nmsgs += 1
+        return mosquitto.Mosquitto.publish(self, topic, payload, qos=qos, retain=retain)
+
+    def empty(self):
+        return self._nmsgs == 0
+
+
 def on_connect(client, userdata, rc):
     if rc != 0:
         return
@@ -50,7 +67,7 @@ def main():
     NUM_CONTROLS = args.ncontrols
     DEV_NAME = args.devname
 
-    client = mosquitto.Mosquitto("simulate")
+    client = MQTT_QueueClient("simulate")
     client.on_connect = on_connect
     # client.on_message = on_message
     client.connect(args.host, args.port)
@@ -80,17 +97,22 @@ def main():
 
         if rc != 0:
             break
-        for i in range(1, NUM_CONTROLS + 1):
-            client.publish("/devices/%s/controls/ctl%d" % (DEV_NAME, i), str(v))
-            v += 1
+
+        if client.empty():
+            for i in range(1, NUM_CONTROLS + 1):
+                client.publish("/devices/%s/controls/ctl%d" % (DEV_NAME, i), str(v))
+                v += 1
 
     # clean up all this flood
     print >>sys.stderr, "Cleaning up..."
+
+    client.reinitialise()
 
     global to_clean_up
 
     to_clean_up = 2 * NUM_CONTROLS + 1
     client.on_publish = on_publish_cleanup
+    client.connect(args.host, args.port)
 
     running = True
 
