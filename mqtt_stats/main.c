@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 
 #include <mosquitto.h>
 
@@ -78,6 +79,37 @@ void log_callback(struct mosquitto *mosq, void *userdata, int level, const char 
     fprintf(stderr, " [mqtt] %s\n", str);
 }
 
+void print_stats()
+{
+    struct timeval t;
+    gettimeofday(&t, NULL);
+
+    int full_interval = t.tv_sec - start_time.tv_sec;
+    float avg_rate = (float) num_messages / full_interval;
+
+    fprintf(stderr, "MQTT stats:\n\tTotal number of messages: %ld\n\tAverage rate: %f msg/s\n\tMax rate: %f msg/s\n\n", 
+            num_messages, avg_rate, max_rate);
+}
+
+void print_current_time()
+{
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    fprintf(stderr, "Current time: %s\n", asctime(timeinfo));
+}
+
+/* USR1 handler */
+void on_usr1(int sig)
+{
+    print_current_time();
+    print_stats();
+    signal(SIGUSR1, on_usr1);
+}
+
 int main(int argc, char *argv[])
 {
     /* arguments:
@@ -117,7 +149,7 @@ int main(int argc, char *argv[])
     /* register signal handler */
     signal(SIGINT, on_signal);
     signal(SIGTERM, on_signal);
-
+    signal(SIGUSR1, on_usr1);
 
     /* init mosquitto */
     mosquitto_lib_init();
@@ -149,6 +181,7 @@ int main(int argc, char *argv[])
     
     fprintf(stderr, "mqtt_stats from host %s, port %d, topic %s\n", broker_host, port, topic);
     fprintf(stderr, "Type Ctrl-C to see stats.\n\n");
+    print_current_time();
 
     /* start loop till we are active (no Ctrl-C received) */
     while (active) {
@@ -175,14 +208,7 @@ int main(int argc, char *argv[])
     }
 
     /* print stats */
-    struct timeval t;
-    gettimeofday(&t, NULL);
-
-    int full_interval = t.tv_sec - start_time.tv_sec;
-    float avg_rate = (float) num_messages / full_interval;
-
-    fprintf(stderr, "MQTT stats:\n\tTotal number of messages: %ld\n\tAverage rate: %f msg/s\n\tMax rate: %f msg/s\n\n", 
-            num_messages, avg_rate, max_rate);
+    print_stats();
 
     mosquitto_destroy(mqtt);
     mosquitto_lib_cleanup();
