@@ -13,8 +13,8 @@ endif
 
 CC=$(CROSS_COMPILE)gcc
 
-LDFLAGS=-lmosquitto -g
-CFLAGS=-std=c99 -g -Wall -Werror
+LDFLAGS=-lmosquitto
+CFLAGS=-std=c99 -O2 -Wall -Werror
 
 all: $(TARGET)
 
