@@ -7,51 +7,78 @@ except ImportError:
     import paho.mqtt.client as mosquitto
 
 import time, random
+import progressbar
 import sys
+
+pb_widgets=[progressbar.Percentage(), progressbar.Bar(left="[", right="]"), progressbar.Counter()]
 
 retain_hack_topic = None
 client = None
+verbose = False
+
+pb = None
+total = 0
+published = 0
 
 topics_to_unpublish = set()
 unpublished_topics = set()
 
 def on_mqtt_message(arg0, arg1, arg2=None):
+    global total, pb
+
     #
     #~ print "on_mqtt_message", arg0, arg1, arg2
     if arg2 is None:
         mosq, obj, msg = None, arg0, arg1
     else:
         mosq, obj, msg = arg0, arg1, arg2
-    print msg.topic
+
+    if verbose:
+        print(msg.topic)
+
     if msg.topic != retain_hack_topic:
         topics_to_unpublish.add(msg.topic)
+        total += 1
     else:
         client.on_publish = on_mqtt_publish
         client.unsubscribe(args.topic)
+        pb = progressbar.ProgressBar(widgets=pb_widgets, maxval=total).start()
         if topics_to_unpublish:
             for topic in topics_to_unpublish:
-                print topic
+                if verbose:
+                    print(topic)
                 ret = client.publish(topic, '', retain=True, qos=2)
 
                 mid = ret[1]
                 unpublished_topics.add(mid)
         #            print "mid", ret, mid
         else:
-            print "done!"
+            # print "done!"
+            pb.finish()
             client.disconnect()
             sys.exit(0)
 
 
-
 def on_mqtt_publish(arg0, arg1, arg2=None):
+    global published, pb
     mid = arg1 or arg2
+    if pb:
+        published += 1
+        pb.update(published)
     unpublished_topics.discard(mid)
     if not unpublished_topics:
-        print "done!"
+        if verbose:
+            print("topics published")
+        if pb:
+            pb.finish()
         client.disconnect()
+        sys.exit(0)
+
 
 if __name__ =='__main__':
     parser = argparse.ArgumentParser(description='MQTT retained message deleter', add_help=False)
+    parser.add_argument('-v', '--verbose', dest='verbose', action="store_true",
+                        help="Verbose output")
 
     parser.add_argument('-h', '--host', dest='host', type=str,
                      help='MQTT host', default='localhost')
@@ -72,7 +99,10 @@ if __name__ =='__main__':
 
     parser.add_argument('topic' ,  type=str,
                      help='Topic mask to unpublish retained messages from. For example: "/devices/my-device/#"')
+
     args = parser.parse_args()
+
+    verbose = args.verbose
 
     retain_hack_topic = args.ret_topic
     client = mosquitto.Mosquitto(mqtt_device_id)

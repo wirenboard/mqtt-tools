@@ -21,10 +21,8 @@ def on_mqtt_message(arg0, arg1, arg2=None):
 
 
     if msg.topic != retain_hack_topic:
-        print "%s\t%s" % (msg.topic, msg.payload)
+        print("%s\t%s" % (msg.topic, msg.payload.replace("\n", "\\\n")))
     else:
-
-
         #~ print "done!"
         client.disconnect()
         sys.exit(0)
