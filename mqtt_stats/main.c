@@ -1,5 +1,5 @@
 /* mqtt_stats - lightweight MQTT broker activity registrator
- * 
+ *
  * See README.md for futher information
  *
  * Author: Nikita webconn Maslov
@@ -48,12 +48,15 @@ long num_messages_rate = 0;
 /* Maximum message rate */
 float max_rate = 0.0;
 
+/* Current message rate */
+float current_rate = 0.0;
+
 /* Start time */
 struct timeval start_time = { 0 };
 
 /* Period start time */
 struct timeval period_start_time = { 0 };
-    
+
 /* Default topic */
 char *topic = DEFAULT_TOPIC;
 
@@ -87,8 +90,8 @@ void print_stats()
     int full_interval = t.tv_sec - start_time.tv_sec;
     float avg_rate = (float) num_messages / full_interval;
 
-    fprintf(stderr, "MQTT stats:\n\tTotal number of messages: %ld\n\tAverage rate: %f msg/s\n\tMax rate: %f msg/s\n\n", 
-            num_messages, avg_rate, max_rate);
+    fprintf(stderr, "MQTT stats:\n\tTotal number of messages: %ld\n\tCurrent rate: %f msg/s\n\tAverage rate: %f msg/s\n\tMax rate: %f msg/s\n\n",
+            num_messages, current_rate, avg_rate, max_rate);
 }
 
 void print_current_time()
@@ -174,11 +177,11 @@ int main(int argc, char *argv[])
     }
 
     mosquitto_subscribe(mqtt, NULL, topic, 0);
-    
+
     /* init timers */
     gettimeofday(&start_time, NULL);
     gettimeofday(&period_start_time, NULL);
-    
+
     fprintf(stderr, "mqtt_stats from host %s, port %d, topic %s\n", broker_host, port, topic);
     fprintf(stderr, "Type Ctrl-C to see stats.\n\n");
     print_current_time();
@@ -195,10 +198,10 @@ int main(int argc, char *argv[])
 
         if (interval >= PERIOD) {
             /* calculate rate */
-            float rate = (float) num_messages_rate / interval;
+            current_rate = (float) num_messages_rate / interval;
 
-            if (rate > max_rate) {
-                max_rate = rate;
+            if (current_rate > max_rate) {
+                max_rate = current_rate;
             }
 
             /* clear counters */
