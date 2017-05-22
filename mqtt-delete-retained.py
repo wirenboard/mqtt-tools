@@ -10,7 +10,7 @@ import time, random
 import progressbar
 import sys
 
-pb_widgets=[progressbar.Percentage(), progressbar.Bar(left="[", right="]"), progressbar.Counter()]
+pb_widgets=[progressbar.Percentage(), progressbar.Bar(left="[", right="]")]
 
 retain_hack_topic = None
 client = None

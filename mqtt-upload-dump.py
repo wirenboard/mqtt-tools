@@ -13,7 +13,7 @@ import progressbar
 
 last_mid = None
 pb = None
-pb_widgets=[progressbar.Percentage(), progressbar.Bar(left="[", right="]"), progressbar.Counter()]
+pb_widgets=[progressbar.Percentage(), progressbar.Bar(left="[", right="]")]
 
 
 def on_mqtt_publish(arg0, arg1, arg2=None):
