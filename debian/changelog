@@ -1,0 +1,17 @@
+mqtt-tools (1.1.1) stable; urgency=medium
+
+  * exit when done in mqtt-delete-retained
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 08 Feb 2016 16:43:58 +0300
+
+mqtt-tools (1.1) stable; urgency=medium
+
+  * add username and password in mqtt-delete-retained
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 25 May 2015 18:12:39 +0300
+
+mqtt-tools (1.0) stable; urgency=medium
+
+  * Initial release. 
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 27 Apr 2015 20:03:58 +0300

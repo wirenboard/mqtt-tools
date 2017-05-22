@@ -1,0 +1,11 @@
+Source: mqtt-tools
+Maintainer: Evgeny Boger <boger@contactless.ru>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 9), pkg-config
+
+Package: mqtt-tools
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-mosquitto
+Description: MQTT tools
