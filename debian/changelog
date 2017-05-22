@@ -1,3 +1,10 @@
+mqtt-tools (1.2~beta1) stable; urgency=medium
+
+  * fix get-dump and upload-dump for multi-line MQTT messages
+  * add progress bars for delete-retained and upload-dump
+
+ -- Nikita Maslov <n.maslov@contactless.ru>  Mon, 22 May 2017 17:29:56 +0300
+
 mqtt-tools (1.1.1) stable; urgency=medium
 
   * exit when done in mqtt-delete-retained
