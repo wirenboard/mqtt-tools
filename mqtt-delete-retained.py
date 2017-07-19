@@ -42,8 +42,8 @@ def on_mqtt_message(arg0, arg1, arg2=None):
     else:
         client.on_publish = on_mqtt_publish
         client.unsubscribe(args.topic)
-        pb = progressbar.ProgressBar(widgets=pb_widgets, maxval=total).start()
         if topics_to_unpublish:
+            pb = progressbar.ProgressBar(widgets=pb_widgets, maxval=total).start()
             for topic in topics_to_unpublish:
                 if verbose:
                     print(topic)
@@ -54,7 +54,8 @@ def on_mqtt_message(arg0, arg1, arg2=None):
         #            print "mid", ret, mid
         else:
             # print "done!"
-            pb.finish()
+            if pb:
+                pb.finish()
             client.disconnect()
             sys.exit(0)
 
