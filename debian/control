@@ -7,5 +7,5 @@ Build-Depends: debhelper (>= 9), pkg-config
 
 Package: mqtt-tools
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-mosquitto
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-mosquitto, python-progressbar (>= 2.2)
 Description: MQTT tools
