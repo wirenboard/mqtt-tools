@@ -13,7 +13,7 @@ import progressbar
 
 last_mid = None
 pb = None
-pb_widgets=[progressbar.Percentage(), progressbar.Bar(left="[", right="]")]
+pb_widgets = [progressbar.Percentage(), progressbar.Bar(left=" [", right="] "), progressbar.SimpleProgress()]
 
 
 def on_mqtt_publish(arg0, arg1, arg2=None):
@@ -104,8 +104,7 @@ if __name__ == '__main__':
     if args.verbose:
         print("last: %d" % last_mid)
 
-    pb = progressbar.ProgressBar(widgets=pb_widgets,
-                                 maxval=last_mid).start()
+    pb = progressbar.ProgressBar(widgets=pb_widgets, maxval=last_mid, term_width=79).start()
 
     while 1:
         rc = client.loop()
