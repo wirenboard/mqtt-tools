@@ -10,7 +10,7 @@ import time, random
 import progressbar
 import sys
 
-pb_widgets=[progressbar.Percentage(), progressbar.Bar(left="[", right="]")]
+pb_widgets=[progressbar.Percentage(), progressbar.Bar(left=" [", right="] "), progressbar.SimpleProgress()]
 
 retain_hack_topic = None
 client = None
@@ -43,7 +43,7 @@ def on_mqtt_message(arg0, arg1, arg2=None):
         client.on_publish = on_mqtt_publish
         client.unsubscribe(args.topic)
         if topics_to_unpublish:
-            pb = progressbar.ProgressBar(widgets=pb_widgets, maxval=total).start()
+            pb = progressbar.ProgressBar(widgets=pb_widgets, maxval=total, term_width=79).start()
             for topic in topics_to_unpublish:
                 if verbose:
                     print(topic)
@@ -56,6 +56,8 @@ def on_mqtt_message(arg0, arg1, arg2=None):
             # print "done!"
             if pb:
                 pb.finish()
+            else:
+                print("warning: no messages for this topic")
             client.disconnect()
             sys.exit(0)
 
