@@ -4,8 +4,9 @@ Section: misc
 Priority: optional
 Standards-Version: 3.9.2
 Build-Depends: debhelper (>= 9), pkg-config
+Homepage: https://github.com/wirenboard/mqtt-tools/
 
 Package: mqtt-tools
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-mosquitto, python-progressbar (>= 2.2)
+Depends: ${shlibs:Depends}, ${misc:Depends}, python3-all, python3-paho-mqtt, python3-tqdm
 Description: MQTT tools
