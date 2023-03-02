@@ -18,7 +18,7 @@ class DeleteRetainedTool:
 
         self.client = MQTTClient(client_id, broker_url, False)
         self.topic = topic
-        self.retain_hack_topic = "/tmp/%s/retain_hack" % self.client._client_id
+        self.retain_hack_topic = "/tmp/%s/retain_hack" % self.client._client_id.decode()
 
     def run(self):
         self.client.start()
