@@ -21,7 +21,7 @@ class GetDumpTool:
 
         # hack to get retained settings first:
         self.client.subscribe(self.ret_topic)
-        self.client.publish(self.ret_topic, "1")
+        self.client.publish(self.ret_topic, "1", qos=2)
 
         while 1:
             ret = self.client.loop()
