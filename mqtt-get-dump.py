@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import signal
 import sys
 
 from wb_common.mqtt_client import DEFAULT_BROKER_URL, MQTTClient
@@ -57,6 +58,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
+    signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
 
     tool = GetDumpTool(
         "mqtt-get-dump",
