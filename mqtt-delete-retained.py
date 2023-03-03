@@ -92,10 +92,16 @@ def main():
         help="MQTT broker url",
         default=DEFAULT_BROKER_URL,
     )
-    parser.add_argument("-h", "--host", dest="host", type=str, help="MQTT host (deprecated)", default="localhost")
+    parser.add_argument(
+        "-h", "--host", dest="host", type=str, help="MQTT host (deprecated)", default="localhost"
+    )
     parser.add_argument("-p", "--port", dest="port", type=int, help="MQTT port (deprecated)", default="1883")
-    parser.add_argument("-u", "--username", dest="username", type=str, help="MQTT username (deprecated)", default="")
-    parser.add_argument("-P", "--password", dest="password", type=str, help="MQTT password (deprecated)", default="")
+    parser.add_argument(
+        "-u", "--username", dest="username", type=str, help="MQTT username (deprecated)", default=""
+    )
+    parser.add_argument(
+        "-P", "--password", dest="password", type=str, help="MQTT password (deprecated)", default=""
+    )
     parser.add_argument(
         "topic",
         type=str,
