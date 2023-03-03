@@ -1,33 +1,26 @@
 #!/usr/bin/env python3
 import argparse
-import random
 import sys
-import time
 
-import paho.mqtt.client as mqtt
+from wb_common.mqtt_client import DEFAULT_BROKER_URL, MQTTClient
 
 
 class GetDumpTool:
-    def __init__(self, host, port, username, password, topic, ret_topic):
-        self.client = mqtt.Client()
+    def __init__(self, client_id, broker_url, topic):
+        self.client = MQTTClient(client_id, broker_url, False)
 
-        if username:
-            self.client.username_pw_set(username, password)
-
-        self.host = host
-        self.port = port
         self.topic = topic
-        self.ret_topic = ret_topic
+        self.ret_topic = "/tmp/%s/retain_hack" % self.client._client_id.decode()
 
     def run(self):
-        self.client.connect(self.host, self.port)
+        self.client.start()
         self.client.on_message = self.on_mqtt_message
 
         self.client.subscribe(self.topic)
 
         # hack to get retained settings first:
         self.client.subscribe(self.ret_topic)
-        self.client.publish(self.ret_topic, "1")
+        self.client.publish(self.ret_topic, "1", qos=2)
 
         while 1:
             ret = self.client.loop()
@@ -43,31 +36,30 @@ class GetDumpTool:
         if msg.topic != self.ret_topic:
             print("%s\t%s" % (msg.topic, msg.payload.decode("utf-8").replace("\n", "\\\n")))
         else:
-            self.client.disconnect()
+            self.client.stop()
             sys.exit(0)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="MQTT retained message deleter", add_help=False)
-
-    parser.add_argument("-h", "--host", dest="host", type=str, help="MQTT host", default="localhost")
-
-    parser.add_argument("-u", "--username", dest="username", type=str, help="MQTT username", default="")
-
-    parser.add_argument("-P", "--password", dest="password", type=str, help="MQTT password", default="")
-
-    parser.add_argument("-p", "--port", dest="port", type=int, help="MQTT port", default="1883")
-
-    mqtt_device_id = str(time.time()) + str(random.randint(0, 100000))
-
+def main():
+    parser = argparse.ArgumentParser(description="MQTT get dump", add_help=False)
     parser.add_argument(
-        "--ret-topic",
-        dest="ret_topic",
+        "-b",
+        "--broker",
+        dest="broker_url",
         type=str,
-        help="Topic to write temporary message to",
-        default="/tmp/%s/retain_hack" % (mqtt_device_id),
+        help="MQTT broker url",
+        default=DEFAULT_BROKER_URL,
     )
-
+    parser.add_argument(
+        "-h", "--host", dest="host", type=str, help="MQTT host (deprecated)", default="localhost"
+    )
+    parser.add_argument("-p", "--port", dest="port", type=int, help="MQTT port (deprecated)", default="1883")
+    parser.add_argument(
+        "-u", "--username", dest="username", type=str, help="MQTT username (deprecated)", default=""
+    )
+    parser.add_argument(
+        "-P", "--password", dest="password", type=str, help="MQTT password (deprecated)", default=""
+    )
     parser.add_argument(
         "topic",
         type=str,
@@ -76,12 +68,25 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # For backward compatibility
+    if args.host != "localhost" or args.port != 1883 or args.username or args.password:
+        if args.username:
+            if args.password:
+                userinfo = "%s:%s@" % (args.username, args.password)
+            else:
+                userinfo = "%s@" % args.username
+        args.broker_url = "tcp://%s%s:%s" % (userinfo, args.host, args.port)
+
     tool = GetDumpTool(
-        args.host,
-        args.port,
-        args.username,
-        args.password,
+        "mqtt-get-dump",
+        args.broker_url,
         args.topic,
-        args.ret_topic,
     )
     tool.run()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)

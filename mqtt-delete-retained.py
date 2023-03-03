@@ -1,41 +1,34 @@
 #!/usr/bin/env python3
 import argparse
-import random
 import sys
-import time
 
-import paho.mqtt.client as mqtt
 import tqdm
+from wb_common.mqtt_client import DEFAULT_BROKER_URL, MQTTClient
 
 
 class DeleteRetainedTool:
-    def __init__(self, client_id, host, port, username, password, topic, retain_hack_topic, verbose=False):
+    def __init__(self, client_id, broker_url, topic, verbose=False):
         self.pbar = None
         self.total = 0
 
         self.verbose = verbose
-        self.retain_hack_topic = retain_hack_topic
 
         self.topics_to_unpublish = set()
         self.unpublished_topics = set()
 
-        self.client = mqtt.Client(client_id)
-        if username:
-            self.client.username_pw_set(username, password)
-
-        self.host = host
-        self.port = port
+        self.client = MQTTClient(client_id, broker_url, False)
         self.topic = topic
+        self.retain_hack_topic = "/tmp/%s/retain_hack" % self.client._client_id.decode()
 
     def run(self):
-        self.client.connect(self.host, self.port)
+        self.client.start()
         self.client.on_message = self.on_mqtt_message
 
         self.client.subscribe(self.topic)
 
         # hack to get retained settings first:
         self.client.subscribe(self.retain_hack_topic)
-        self.client.publish(self.retain_hack_topic, "1")
+        self.client.publish(self.retain_hack_topic, "1", qos=2)
 
         while 1:
             ret = self.client.loop()
@@ -71,7 +64,7 @@ class DeleteRetainedTool:
                     self.pbar.close()
                 else:
                     print("warning: no messages for this topic")
-                self.client.disconnect()
+                self.client.stop()
                 sys.exit(0)
 
     def on_mqtt_publish(self, _, arg1, arg2=None):
@@ -84,32 +77,31 @@ class DeleteRetainedTool:
                 print("topics published")
             if self.pbar:
                 self.pbar.close()
-            self.client.disconnect()
+            self.client.stop()
             sys.exit(0)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="MQTT retained message deleter", add_help=False)
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="Verbose output")
-
-    parser.add_argument("-h", "--host", dest="host", type=str, help="MQTT host", default="localhost")
-
-    parser.add_argument("-p", "--port", dest="port", type=int, help="MQTT port", default="1883")
-
-    parser.add_argument("-u", "--username", dest="username", type=str, help="MQTT username", default="")
-
-    parser.add_argument("-P", "--password", dest="password", type=str, help="MQTT password", default="")
-
-    mqtt_device_id = str(time.time()) + str(random.randint(0, 100000))
-
     parser.add_argument(
-        "--ret-topic",
-        dest="ret_topic",
+        "-b",
+        "--broker",
+        dest="broker_url",
         type=str,
-        help="Topic to write temporary message to",
-        default="/tmp/%s/retain_hack" % (mqtt_device_id),
+        help="MQTT broker url",
+        default=DEFAULT_BROKER_URL,
     )
-
+    parser.add_argument(
+        "-h", "--host", dest="host", type=str, help="MQTT host (deprecated)", default="localhost"
+    )
+    parser.add_argument("-p", "--port", dest="port", type=int, help="MQTT port (deprecated)", default="1883")
+    parser.add_argument(
+        "-u", "--username", dest="username", type=str, help="MQTT username (deprecated)", default=""
+    )
+    parser.add_argument(
+        "-P", "--password", dest="password", type=str, help="MQTT password (deprecated)", default=""
+    )
     parser.add_argument(
         "topic",
         type=str,
@@ -118,15 +110,27 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # For backward compatibility
+    if args.host != "localhost" or args.port != 1883 or args.username or args.password:
+        if args.username:
+            if args.password:
+                userinfo = "%s:%s@" % (args.username, args.password)
+            else:
+                userinfo = "%s@" % args.username
+        args.broker_url = "tcp://%s%s:%s" % (userinfo, args.host, args.port)
+
     tool = DeleteRetainedTool(
-        mqtt_device_id,
-        args.host,
-        args.port,
-        args.username,
-        args.password,
+        "mqtt-delete-retained",
+        args.broker_url,
         args.topic,
-        retain_hack_topic=args.ret_topic,
         verbose=args.verbose,
     )
 
     tool.run()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)

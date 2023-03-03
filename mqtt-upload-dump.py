@@ -2,18 +2,14 @@
 import argparse
 import sys
 
-import paho.mqtt.client as mqtt
 import tqdm
+from wb_common.mqtt_client import DEFAULT_BROKER_URL, MQTTClient
 
 
 class UploadDumpTool:
-    def __init__(self, host, port, username, password, filename, verbose=False):
-        self.client = mqtt.Client()
-        if username:
-            self.client.username_pw_set(username, password)
+    def __init__(self, client_id, broker_url, filename, verbose=False):
+        self.client = MQTTClient(client_id, broker_url, False)
 
-        self.host = host
-        self.port = port
         self.filename = filename
         self.verbose = verbose
 
@@ -58,7 +54,7 @@ class UploadDumpTool:
                 full_msg = None
 
     def run(self):
-        self.client.connect(self.host, self.port)
+        self.client.start()
         self.client.on_publish = self.on_mqtt_publish
 
         mid = None
@@ -88,36 +84,58 @@ class UploadDumpTool:
             self.pbar.update(1)
         # print mid, last_mid
         if self.last_mid and (self.last_mid == mid):
-            self.client.disconnect()
+            self.client.stop()
             self.pbar.close()
             sys.exit(0)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="publish mqtt messages to broker", add_help=False)
-
-    parser.add_argument("-h", "--host", dest="host", type=str, help="MQTT host", default="localhost")
-
-    parser.add_argument("-p", "--port", dest="port", type=int, help="MQTT port", default="1883")
-
-    parser.add_argument("-u", "--username", dest="username", type=str, help="MQTT username", default="")
-
-    parser.add_argument("-P", "--password", dest="password", type=str, help="MQTT password", default="")
-
+    parser.add_argument(
+        "-b",
+        "--broker",
+        dest="broker_url",
+        type=str,
+        help="MQTT broker url",
+        default=DEFAULT_BROKER_URL,
+    )
+    parser.add_argument(
+        "-h", "--host", dest="host", type=str, help="MQTT host (deprecated)", default="localhost"
+    )
+    parser.add_argument("-p", "--port", dest="port", type=int, help="MQTT port (deprecated)", default="1883")
+    parser.add_argument(
+        "-u", "--username", dest="username", type=str, help="MQTT username (deprecated)", default=""
+    )
+    parser.add_argument(
+        "-P", "--password", dest="password", type=str, help="MQTT password (deprecated)", default=""
+    )
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="Verbose output")
-
     parser.add_argument(
         "filename", type=str, help="File containing MQTT dump.  Topic and message are separated by tab"
     )
 
     args = parser.parse_args()
 
+    # For backward compatibility
+    if args.host != "localhost" or args.port != 1883 or args.username or args.password:
+        if args.username:
+            if args.password:
+                userinfo = "%s:%s@" % (args.username, args.password)
+            else:
+                userinfo = "%s@" % args.username
+        args.broker_url = "tcp://%s%s:%s" % (userinfo, args.host, args.port)
+
     tool = UploadDumpTool(
-        args.host,
-        args.port,
-        args.username,
-        args.password,
+        "mqtt-upload-dump",
+        args.broker_url,
         args.filename,
         verbose=args.verbose,
     )
     tool.run()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)

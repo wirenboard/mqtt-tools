@@ -8,5 +8,5 @@ Homepage: https://github.com/wirenboard/mqtt-tools/
 
 Package: mqtt-tools
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python3-all, python3-paho-mqtt, python3-tqdm
+Depends: ${shlibs:Depends}, ${misc:Depends}, python3-all, python3-wb-common (>= 2.1.0), python3-tqdm
 Description: MQTT tools
