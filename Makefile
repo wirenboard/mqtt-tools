@@ -1,13 +1,11 @@
 .PHONY: all clean
 
+PREFIX = /usr
+
 all:
-clean :
+clean:
 
 install: all
-	install -m 0755 mqtt-upload-dump.py  $(DESTDIR)/usr/bin/mqtt-upload-dump
-	install -m 0755 mqtt-get-dump.py  $(DESTDIR)/usr/bin/mqtt-get-dump
-	install -m 0755 mqtt-delete-retained.py  $(DESTDIR)/usr/bin/mqtt-delete-retained
-
-
-
-
+	install -Dm0755 mqtt-upload-dump.py $(DESTDIR)$(PREFIX)/bin/mqtt-upload-dump
+	install -Dm0755 mqtt-get-dump.py $(DESTDIR)$(PREFIX)/bin/mqtt-get-dump
+	install -Dm0755 mqtt-delete-retained.py $(DESTDIR)$(PREFIX)/bin/mqtt-delete-retained
