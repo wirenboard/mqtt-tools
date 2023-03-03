@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import signal
 import sys
 
 import tqdm
@@ -90,7 +89,7 @@ class UploadDumpTool:
             sys.exit(0)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="publish mqtt messages to broker", add_help=False)
     parser.add_argument(
         "-b",
@@ -111,8 +110,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
-
     # For backward compatibility
     if args.host != "localhost" or args.port != 1883 or args.username or args.password:
         if args.username:
@@ -129,3 +126,10 @@ if __name__ == "__main__":
         verbose=args.verbose,
     )
     tool.run()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import signal
 import sys
 
 import tqdm
@@ -82,7 +81,7 @@ class DeleteRetainedTool:
             sys.exit(0)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="MQTT retained message deleter", add_help=False)
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="Verbose output")
     parser.add_argument(
@@ -105,8 +104,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
-
     # For backward compatibility
     if args.host != "localhost" or args.port != 1883 or args.username or args.password:
         if args.username:
@@ -124,3 +121,10 @@ if __name__ == "__main__":
     )
 
     tool.run()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)

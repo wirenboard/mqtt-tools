@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import signal
 import sys
 
 from wb_common.mqtt_client import DEFAULT_BROKER_URL, MQTTClient
@@ -41,7 +40,7 @@ class GetDumpTool:
             sys.exit(0)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="MQTT get dump", add_help=False)
     parser.add_argument(
         "-b",
@@ -63,8 +62,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
-
     # For backward compatibility
     if args.host != "localhost" or args.port != 1883 or args.username or args.password:
         if args.username:
@@ -80,3 +77,10 @@ if __name__ == "__main__":
         args.topic,
     )
     tool.run()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)
