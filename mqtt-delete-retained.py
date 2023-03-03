@@ -93,6 +93,10 @@ if __name__ == "__main__":
         help="MQTT broker url",
         default=DEFAULT_BROKER_URL,
     )
+    parser.add_argument("-h", "--host", dest="host", type=str, help="MQTT host (deprecated)", default="localhost")
+    parser.add_argument("-p", "--port", dest="port", type=int, help="MQTT port (deprecated)", default="1883")
+    parser.add_argument("-u", "--username", dest="username", type=str, help="MQTT username (deprecated)", default="")
+    parser.add_argument("-P", "--password", dest="password", type=str, help="MQTT password (deprecated)", default="")
     parser.add_argument(
         "topic",
         type=str,
@@ -102,6 +106,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
+
+    # For backward compatibility
+    if args.host != "localhost" or args.port != 1883 or args.username or args.password:
+        if args.username:
+            if args.password:
+                userinfo = "%s:%s@" % (args.username, args.password)
+            else:
+                userinfo = "%s@" % args.username
+        args.broker_url = "tcp://%s%s:%s" % (userinfo, args.host, args.port)
 
     tool = DeleteRetainedTool(
         "mqtt-delete-retained",
