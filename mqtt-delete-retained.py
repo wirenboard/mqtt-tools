@@ -49,7 +49,7 @@ class DeleteRetainedTool:
             self.total += 1
         else:
             self.client.on_publish = self.on_mqtt_publish
-            self.client.unsubscribe(args.topic)
+            self.client.unsubscribe(self.topic)
             if self.topics_to_unpublish:
                 self.pbar = tqdm.tqdm(total=self.total)
                 for topic in self.topics_to_unpublish:
