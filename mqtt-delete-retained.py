@@ -133,7 +133,7 @@ def main():
     )
     try:
         tool.run()
-    except ConnectionRefusedError:
+    except (ConnectionError, ConnectionRefusedError):
         logger.error("Cannot connect to broker %s", args.broker_url)
 
 
