@@ -1,6 +1,6 @@
 mqtt-tools (1.4.2) stable; urgency=medium
 
-  * Fix exception on connection error
+  * Fix connection error handling
 
  -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Mon, 07 Aug 2023 13:26:00 +0400
 
