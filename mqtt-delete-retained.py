@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
+# pylint: disable=invalid-name
 import argparse
+import logging
 import sys
 
 import tqdm
 from wb_common.mqtt_client import DEFAULT_BROKER_URL, MQTTClient
 
+logger = logging.getLogger(__name__)
 
+
+# pylint: disable=too-many-instance-attributes
 class DeleteRetainedTool:
     def __init__(self, client_id, broker_url, topic, verbose=False):
         self.pbar = None
@@ -18,7 +23,7 @@ class DeleteRetainedTool:
 
         self.client = MQTTClient(client_id, broker_url, False)
         self.topic = topic
-        self.retain_hack_topic = "/tmp/%s/retain_hack" % self.client._client_id.decode()
+        self.retain_hack_topic = f"/tmp/{self.client._client_id.decode()}/retain_hack"
 
     def run(self):
         self.client.start()
@@ -112,12 +117,13 @@ def main():
 
     # For backward compatibility
     if args.host != "localhost" or args.port != 1883 or args.username or args.password:
+        userinfo = ""
         if args.username:
             if args.password:
-                userinfo = "%s:%s@" % (args.username, args.password)
+                userinfo = f"{args.username}:{args.password}@"
             else:
-                userinfo = "%s@" % args.username
-        args.broker_url = "tcp://%s%s:%s" % (userinfo, args.host, args.port)
+                userinfo = f"{args.username}@"
+        args.broker_url = f"tcp://{userinfo}{args.host}:{args.port}"
 
     tool = DeleteRetainedTool(
         "mqtt-delete-retained",
@@ -125,8 +131,10 @@ def main():
         args.topic,
         verbose=args.verbose,
     )
-
-    tool.run()
+    try:
+        tool.run()
+    except (ConnectionError, ConnectionRefusedError):
+        logger.error("Cannot connect to broker %s", args.broker_url)
 
 
 if __name__ == "__main__":
