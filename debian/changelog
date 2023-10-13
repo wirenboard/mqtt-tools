@@ -1,3 +1,9 @@
+mqtt-tools (1.4.3) stable; urgency=medium
+
+  * Fix pylint errors. No functional changes
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.com>  Fri, 13 Oct 2023 12:31:36 +0500
+
 mqtt-tools (1.4.2) stable; urgency=medium
 
   * Fix connection error handling
