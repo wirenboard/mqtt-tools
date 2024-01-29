@@ -1,3 +1,9 @@
+mqtt-tools (1.4.4) stable; urgency=medium
+
+  * Fix error handling
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Mon, 29 Jan 2024 16:15:00 +0400
+
 mqtt-tools (1.4.3) stable; urgency=medium
 
   * Fix pylint errors. No functional changes

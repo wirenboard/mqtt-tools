@@ -141,6 +141,8 @@ def main():
         tool.run()
     except (ConnectionError, ConnectionRefusedError):
         logger.error("Cannot connect to broker %s", args.broker_url)
+    except FileNotFoundError as e:
+        logger.error("File not found: %s", e.filename)
 
 
 if __name__ == "__main__":

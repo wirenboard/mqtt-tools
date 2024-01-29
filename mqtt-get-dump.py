@@ -92,6 +92,8 @@ def main():
         tool.run()
     except (ConnectionError, ConnectionRefusedError):
         logger.error("Cannot connect to broker %s", args.broker_url)
+    except ValueError as err:
+        logger.error(err)
 
 
 if __name__ == "__main__":
