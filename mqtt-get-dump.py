@@ -68,7 +68,7 @@ def main():
     parser.add_argument(
         "topic",
         type=str,
-        help='Topic mask to unpublish retained messages from. For example: "/devices/my-device/#"',
+        help='Topic mask to dump retained messages from. For example: "/devices/my-device/#"',
     )
 
     args = parser.parse_args()

@@ -116,7 +116,7 @@ def main():
     )
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="Verbose output")
     parser.add_argument(
-        "filename", type=str, help="File containing MQTT dump.  Topic and message are separated by tab"
+        "filename", type=str, help="File containing MQTT dump. Topic and message are separated by tab"
     )
 
     args = parser.parse_args()
