@@ -1,12 +1,16 @@
 Source: mqtt-tools
-Maintainer: Evgeny Boger <boger@contactless.ru>
+Maintainer: Wiren Board team <info@wirenboard.com>
 Section: misc
 Priority: optional
-Standards-Version: 3.9.2
-Build-Depends: debhelper (>= 9), pkg-config, python3-wb-common, python3-tqdm
+Standards-Version: 4.5.1
+Build-Depends: debhelper (>= 9)
 Homepage: https://github.com/wirenboard/mqtt-tools/
 
 Package: mqtt-tools
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python3-all, python3-wb-common (>= 2.1.0), python3-tqdm
-Description: MQTT tools
+Depends: ${misc:Depends},
+         python3,
+         python3-wb-common (>= 2.1.0),
+         python3-tqdm
+Description: Command-line tools for MQTT
+ A set of tools for working with MQTT.
