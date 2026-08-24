@@ -27,7 +27,7 @@ class UploadDumpTool:
         full_msg = None
         with open(filename, encoding="utf-8") as f:
             for line in f:
-                line = line[:-1]
+                line = line.rstrip("\n")
 
                 next_line = False
                 if len(line) > 0 and line[-1] == "\\":
@@ -68,6 +68,11 @@ class UploadDumpTool:
             _, mid = self.client.publish(topic, full_msg, retain=True, qos=2)
             if self.verbose:
                 print(topic)
+
+        if mid is None:
+            logger.warning("No messages found in %s", self.filename)
+            self.client.stop()
+            return
 
         self.last_mid = mid
 

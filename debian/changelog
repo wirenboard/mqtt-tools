@@ -1,3 +1,10 @@
+mqtt-tools (1.4.6) stable; urgency=medium
+
+  * mqtt-upload-dump: fix truncated last message in a dump without a trailing newline
+  * mqtt-upload-dump: don't hang on a dump containing no messages
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Thu, 20 Aug 2026 16:40:00 +0400
+
 mqtt-tools (1.4.5) stable; urgency=medium
 
   * Fix lintian, no functional changes
