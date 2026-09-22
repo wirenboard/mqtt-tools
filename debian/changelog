@@ -1,3 +1,9 @@
+mqtt-tools (1.4.7) stable; urgency=medium
+
+  * mqtt-upload-dump: allow reading dump from stdin
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Tue, 22 Sep 2026 12:53:39 +0400
+
 mqtt-tools (1.4.6) stable; urgency=medium
 
   * mqtt-upload-dump: fix truncated last message in a dump without a trailing newline

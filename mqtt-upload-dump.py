@@ -2,6 +2,7 @@
 # pylint: disable=invalid-name
 # pylint: disable=duplicate-code
 import argparse
+import contextlib
 import logging
 import sys
 
@@ -25,7 +26,10 @@ class UploadDumpTool:
     def parse_dump(filename):
         topic = None
         full_msg = None
-        with open(filename, encoding="utf-8") as f:
+        input_stream = (
+            contextlib.nullcontext(sys.stdin) if filename == "-" else open(filename, encoding="utf-8")
+        )
+        with input_stream as f:
             for line in f:
                 line = line.rstrip("\n")
 
@@ -121,7 +125,9 @@ def main():
     )
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="Verbose output")
     parser.add_argument(
-        "filename", type=str, help="File containing MQTT dump. Topic and message are separated by tab"
+        "filename",
+        type=str,
+        help="File containing MQTT dump, or - for stdin. Topic and message are separated by tab",
     )
 
     args = parser.parse_args()
