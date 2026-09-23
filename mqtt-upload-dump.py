@@ -23,40 +23,48 @@ class UploadDumpTool:
 
     @staticmethod
     def parse_dump(filename):
+        if filename == "-":
+            yield from UploadDumpTool.parse_dump_stream(sys.stdin)
+            return
+
+        with open(filename, encoding="utf-8") as input_stream:
+            yield from UploadDumpTool.parse_dump_stream(input_stream)
+
+    @staticmethod
+    def parse_dump_stream(input_stream):
         topic = None
         full_msg = None
-        with open(filename, encoding="utf-8") as f:
-            for line in f:
-                line = line.rstrip("\n")
+        for line in input_stream:
+            line = line.rstrip("\n")
 
-                next_line = False
-                if len(line) > 0 and line[-1] == "\\":
-                    next_line = True
-                    line = line[:-1]
+            next_line = False
+            if len(line) > 0 and line[-1] == "\\":
+                next_line = True
+                line = line[:-1]
 
-                if topic is None:
-                    chunks = line.split("\t", 1)
-                    if len(chunks) < 2:
-                        continue
-
-                    topic, msg = line.split("\t", 1)
-
-                    if next_line:
-                        msg = msg + "\n"
-                    full_msg = msg
-                else:
-                    if next_line:
-                        line = line + "\n"
-                    full_msg += line
-
-                # check if line end contains backslash
-                if next_line:
+            if topic is None:
+                chunks = line.split("\t", 1)
+                if len(chunks) < 2:
                     continue
 
-                yield (topic, full_msg)
+                topic, msg = line.split("\t", 1)
 
-                topic = None
-                full_msg = None
+                if next_line:
+                    msg = msg + "\n"
+                full_msg = msg
+            else:
+                if next_line:
+                    line = line + "\n"
+                full_msg += line
+
+            # check if line end contains backslash
+            if next_line:
+                continue
+
+            yield (topic, full_msg)
+
+            topic = None
+            full_msg = None
 
     def run(self):
         self.client.start()
@@ -121,7 +129,9 @@ def main():
     )
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="Verbose output")
     parser.add_argument(
-        "filename", type=str, help="File containing MQTT dump. Topic and message are separated by tab"
+        "filename",
+        type=str,
+        help="File containing MQTT dump, or - for stdin. Topic and message are separated by tab",
     )
 
     args = parser.parse_args()
