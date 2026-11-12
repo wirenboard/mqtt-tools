@@ -1,3 +1,11 @@
+mqtt-tools (1.4.8) stable; urgency=medium
+
+  * Switch the license to The WB License (MIT-WB): Automation Technologies, LLC (Wiren Board)
+    as the copyright holder, 2014 as the first publication year, use restricted to Wiren Board equipment
+  * Fill debian/copyright in the DEP-5 format
+
+ -- Ekaterina Volkova <ekaterina.volkova@wirenboard.com>  Thu, 12 Nov 2026 15:46:43 +0300
+
 mqtt-tools (1.4.7) stable; urgency=medium
 
   * mqtt-upload-dump: allow reading dump from stdin
